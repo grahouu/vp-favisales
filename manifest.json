@@ -1,0 +1,28 @@
+{
+    "manifest_version": 2,
+    "name": "Modify CSS and HTML",
+    "version": "0.1.0",
+    "description": "Lateral blog post demo extension",
+    "background": 
+    { 
+        "persistent": true,
+        "scripts": ["jquery-3.2.1.min.js", "background.js"]
+    },
+    "permissions": ["background", "tabs", "webRequest", "<all_urls>"],
+    "content_scripts": [
+        {
+            "all_frames": true,
+            "run_at": "document_end",
+            "css": [
+                "styles.css"
+            ],
+            "js": [
+                "jquery-3.2.1.min.js",
+                "script.js"
+            ],
+            "matches": [
+                "https://secure.fr.vente-privee.com/ns/fr-fr/home/default/*"
+            ]
+        }
+    ]
+}

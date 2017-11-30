@@ -1,0 +1,14 @@
+.fav_star {
+    background-color: #ffffff00;
+    width: 100%;
+    float: right; 
+    text-align: right;
+    position: absolute;
+    z-index: 1;
+    padding-right: 4px;
+    margin-top: 2px;
+}
+
+.fa-star {
+    color: rgb(241, 252, 85);
+  }
