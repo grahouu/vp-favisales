@@ -1,4 +1,5 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+    console.log("okokok")
     if (msg.message && (msg.message == "run")) {
         start()
     }
@@ -70,15 +71,27 @@ function setFavorites(){
     });
 }
 
+function addStar(elem){
+    elem.attr("fav", false);
+    let obj_template_star = $(template_star)
+    obj_template_star.attr("ope-id", elem.attr("data-operation-id"))
+    elem.find("#container").prepend(obj_template_star)
+}
+
 function start() {
+    console.log("okok")
     $('head').append('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">');
     $( "#topcarousel" ).after( template_wrapper );
     $(".bannerWrapper").each(function () {
-        let elem = $(this)
-        elem.attr("fav", false);
-        let obj_template_star = $(template_star)
-        obj_template_star.attr("ope-id", elem.attr("data-operation-id"))
-        elem.find("#container").prepend(obj_template_star)
+        addStar($(this))
+        // $(this).find(".LazyLoad").change(function() {
+        //     alert( "Handler for .change() called." );
+        // });
+        $(this).find(".LazyLoad").bind('DOMSubtreeModified', function(e) {
+            console.log('class changed');
+        });
+        // console.log(elem.find(".LazyLoad"))
+        // // elem.find(".LazyLoad").lazyload();
     });
     setFavorites();
     clickElement();
