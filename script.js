@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
-    console.log("okokok")
     if (msg.message && (msg.message == "run")) {
         start()
     }
@@ -18,81 +17,72 @@ let template_wrapper = `
     <div class="react-grid-layout layout" id="favorites_list" > </div>
 </div>
 `
-let favorites = JSON.parse(localStorage.getItem("favorites")) || []
+let favorites = JSON.parse(localStorage.getItem("favorites")) || {}
 
-function clickElement(){
-    $(".fav_star").click(function() {
+function clickElement(myStar){
+    myStar.click(function() {
         let favorites_list_elem = $("#favorites_list")
-        let elem = $(this)
-        let opeId = elem.attr("ope-id")
+        let star_elem = $(this)
+        let opeId = star_elem.attr("ope-id")
         let banner = $(".bannerWrapper[data-operation-id='"+opeId+"']").first()
-        console.log(banner)
         if (banner.attr("fav") == "false"){
-            let newElem = banner.clone();
-            saveFav(opeId)
-            newElem.attr("fav", true);
-            newElem.css("display", "inline-block");
-            newElem.css("position", "");
-            newElem.css("transform", "");
-            newElem.css("margin-left", "20px");
-            newElem.css("margin-bottom", "20px");
-            newElem.appendTo(favorites_list_elem);
-            newElem.click(clickElement())
+            let newBanner = banner.clone();
+            newBanner.attr("fav", true);
+            newBanner.css("display", "inline-block");
+            newBanner.css("position", "");
+            newBanner.css("transform", "");
+            newBanner.css("margin-left", "20px");
+            newBanner.css("margin-bottom", "20px");
+            clickElement(newBanner.find(".fav_star"));
+            newBanner.appendTo(favorites_list_elem);
+            saveFav(opeId, newBanner)
         }else if (banner.attr("fav") == "true"){
-            banner.remove()
+            let idOpe = banner.attr("data-operation-id")
+            banner.remove();
+            saveFav(opeId)
         }
-        
     });
 }
 
-function saveFav(operationId){
-    if (favorites.indexOf(operationId) < 0){
-        favorites.push(operationId)
-        localStorage.setItem("favorites", JSON.stringify(favorites))
-    }
+function saveFav(operationId, banner = null){
+    if(operationId in favorites)
+        delete favorites[operationId]
+    else
+        favorites[operationId] = banner.prop('outerHTML')
+
+    localStorage.setItem("favorites", JSON.stringify(favorites))
 }
 
 function setFavorites(){
     let wrapper_elem = $("#favorites_list")
-    favorites.forEach(function(opeId) {
-        let banner = $(".bannerWrapper[data-operation-id='"+opeId+"']")
-        console.log(banner.length)
-        if (banner.length){
-            let newElem = banner.clone();
-            newElem.attr("fav", true);
-            newElem.css("display", "inline-block");
-            newElem.css("position", "");
-            newElem.css("transform", "");
-            newElem.css("margin-left", "20px");
-            newElem.css("margin-bottom", "20px");
-            newElem.appendTo(wrapper_elem);
-            newElem.click(clickElement())
+
+    for (var property in favorites) {
+        if (favorites.hasOwnProperty(property)) {
+            let obj = $(favorites[property])
+            clickElement(obj.find(".fav_star"))
+            obj.appendTo(wrapper_elem);
         }
-    });
+    }
 }
 
 function addStar(elem){
     elem.attr("fav", false);
     let obj_template_star = $(template_star)
     obj_template_star.attr("ope-id", elem.attr("data-operation-id"))
+    clickElement(obj_template_star);
     elem.find("#container").prepend(obj_template_star)
 }
 
 function start() {
-    console.log("okok")
     $('head').append('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">');
-    $( "#topcarousel" ).after( template_wrapper );
+    $( "#topcarousel" ).after(template_wrapper);
     $(".bannerWrapper").each(function () {
         addStar($(this))
-        // $(this).find(".LazyLoad").change(function() {
-        //     alert( "Handler for .change() called." );
-        // });
-        $(this).find(".LazyLoad").bind('DOMSubtreeModified', function(e) {
-            console.log('class changed');
-        });
-        // console.log(elem.find(".LazyLoad"))
-        // // elem.find(".LazyLoad").lazyload();
+        $(this).find(".LazyLoad").bind("DOMSubtreeModified",function(e){
+            e.stopPropagation();
+            $(this).unbind(e);
+            addStar($(this).parent())
+        })
     });
     setFavorites();
-    clickElement();
 }
